@@ -357,15 +357,15 @@ export default function Service() {
 
                 console.log("Failed to delete service deployment:", error);
 
-                if (error?.status === "PARSING_ERROR" && error?.originalStatus === 200) {
-                    toast({
-                        title: "Success",
-                        description:
-                            error?.data?.message ||
-                            `Service "${serviceToDelete.name}" has been deleted successfully.`,
-                        variant: "success",
-                        duration: 3000,
-                    });
+                    if (error?.status === "PARSING_ERROR" && error?.originalStatus === 200) {
+                        toast({
+                            title: "Success",
+                            description:
+                                error?.data?.message ||
+                                `Service "${serviceToDelete.name}" has been deleted successfully.`,
+                            variant: "success",
+                            duration: 3000,
+                        });
 
                     data1();
                     data2();

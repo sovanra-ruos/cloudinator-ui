@@ -18,9 +18,11 @@ import { useCreateWorkspaceMutation, useGetWorkspacesQuery } from "@/redux/api/p
 import { useToast } from "@/hooks/use-toast"
 
 interface ErrorResponse {
-  data?: {
-    message?: string;
-  };
+    status?: string;
+    originalStatus?: number;
+    data?: {
+        message?: string;
+    };
 }
 
 export function CreateWorkspaceModal() {
@@ -30,7 +32,7 @@ export function CreateWorkspaceModal() {
     const [isCreating, setIsCreating] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
 
-    const { data } = useGetWorkspacesQuery()
+    const { data, refetch } = useGetWorkspacesQuery()
 
     const [createWorkspace] = useCreateWorkspaceMutation()
 
@@ -55,20 +57,36 @@ export function CreateWorkspaceModal() {
 
             console.log(results)
 
-            setWorkspaceName("")
-            setOpen(false)
+
         } catch (err) {
             const error = err as ErrorResponse
             console.error(error)
 
-            toast({
-                title: "Error",
-                description: error?.data?.message || "Failed to create workspace. Please try again.",
-                variant: "error",
-                duration: 5000,
-            })
+            if (error?.status === "PARSING_ERROR" && error?.originalStatus === 200) {
+                toast({
+                    title: "Success",
+                    description:
+                        error?.data?.message ||
+                        `Workspace Create Successfull.`,
+                    variant: "success",
+                    duration: 3000,
+                });
+                setWorkspaceName("")
+                setOpen(false)
+                refetch()
+            } else {
+                toast({
+                    title: "Error",
+                    description:
+                        error?.data?.message ||
+                        "Failed to create workspace. Please try again.",
+                    variant: "error",
+                    duration: 5000,
+                });
+            }
         } finally {
             setIsCreating(false)
+            refetch()
         }
     }
 
