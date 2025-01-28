@@ -389,7 +389,7 @@ export default function ProjectDetailPage({ params }: PropsParams) {
     );
   }
 
-  const url = `https://${projects.subdomain}.soben.me`;
+  const url = `https://${projects.subdomain}.cloudinator.cloud`;
 
   const isDeploymentRunning = buildNumber.some(
     (build) => build.status === "BUILDING",

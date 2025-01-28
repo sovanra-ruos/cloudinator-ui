@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: "Cloudinator Docs: Master Cloud Deployment and Microservices",
         description: "Dive into Cloudinator's comprehensive documentation. Learn to deploy, manage, and optimize your cloud infrastructure and microservices with ease.",
-        url: "https://cloudinator-document.soben.me/",
+        url: "https://cloudinator-document.cloudinator.cloud/",
         siteName: "Cloudinator",
         images: [
             {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
         type: "website",
     },
     alternates: {
-        canonical: "https://cloudinator-document.soben.me/",
+        canonical: "https://cloudinator-document.cloudinator.cloud/",
     },
 };
 
