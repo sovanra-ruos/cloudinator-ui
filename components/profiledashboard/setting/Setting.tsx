@@ -36,9 +36,7 @@ export default function ProfilePage() {
   const [status, setStatus] = useState("");
   const [gender, setGender] = useState("");
   const DEFAULT_AVATAR = "https://cloudinator.istad.co/placeholder.png";
-  const [avatarSrc, setAvatarSrc] = useState(
-    "https://cloudinator.istad.co/placeholder.png"
-  );
+  const [avatarSrc, setAvatarSrc] = useState(DEFAULT_AVATAR);
 
   const { data: userData, isLoading } = useGetMeQuery();
   const [updateUser, { isLoading: isUpdating }] =
@@ -56,13 +54,21 @@ export default function ProfilePage() {
       );
       setStatus(userData.status || "");
       setGender(userData.gender || "");
-      setAvatarSrc(
-        userData.profileImage
-          ? userData.profileImage.startsWith("http")
-            ? userData.profileImage
-            : `https://cloudinator.istad.co${userData.profileImage}`
-          : "https://cloudinator.istad.co/placeholder.png"
-      );
+      if (userData.profileImage) {
+        // If the profile image starts with http, use it directly
+        if (userData.profileImage.startsWith('http')) {
+          setAvatarSrc(userData.profileImage);
+        } else {
+          // If it's a relative path, ensure it starts with /
+          const path = userData.profileImage.startsWith('/') 
+            ? userData.profileImage 
+            : `/${userData.profileImage}`;
+          setAvatarSrc(path);
+        }
+      } else {
+        // Use local placeholder if no profile image
+        setAvatarSrc(DEFAULT_AVATAR);
+      }
     }
   }, [userData]);
 
@@ -118,15 +124,7 @@ export default function ProfilePage() {
     );
   }
 
-  const avatarSrcToUse = userData?.profileImage
-    ? userData.profileImage.startsWith("http")
-      ? userData.profileImage // Use as-is if it's already a full URL
-      : `https://cloudinator.istad.co${
-          userData.profileImage.startsWith("/")
-            ? userData.profileImage
-            : `/${userData.profileImage}`
-        }` // Ensure a leading slash
-    : "https://cloudinator.istad.co/placeholder.png"; // Fallback to a valid placeholder image
+
 
   return (
     <div className="flex flex-col bg-background min-h-screen w-full p-6 md:p-10">
@@ -152,16 +150,12 @@ export default function ProfilePage() {
             <div className="flex items-start space-x-4">
               <div className="h-20 w-20 rounded-full bg-muted overflow-hidden border border-border">
                 <Image
-                  src={avatarSrcToUse}
+                  src={avatarSrc}
                   width={100}
                   height={100}
                   alt="Profile"
                   className="h-full w-full object-cover"
-                  onError={(e) => {
-                    const img = e.target as HTMLImageElement;
-                    img.onerror = null; // Prevent infinite loop
-                    img.src = DEFAULT_AVATAR;
-                  }}
+                  onError={() => setAvatarSrc(DEFAULT_AVATAR)}
                 />
               </div>
               <div>
@@ -360,11 +354,7 @@ export default function ProfilePage() {
                   height={100}
                   alt="Profile"
                   className="h-full w-full object-cover"
-                  onError={(e) => {
-                    const img = e.target as HTMLImageElement;
-                    img.onerror = null; // Prevent infinite loop
-                    img.src = DEFAULT_AVATAR;
-                  }}
+                  onError={() => setAvatarSrc(DEFAULT_AVATAR)}
                 />
               </div>
             </div>

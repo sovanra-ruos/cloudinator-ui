@@ -9,11 +9,12 @@ import logo from "@/public/cloudinator-v2.1.png";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ModeToggle";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 const NavBarHomePage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-
+  const router = useRouter();
   const { user, loading, error } = useAuth();
 
   useEffect(() => {
@@ -66,12 +67,14 @@ const NavBarHomePage = () => {
 
     return (
       <>
-        {/* <Button
+        <Button
           asChild
-          className="bg-purple-600 hover:bg-purple-700 text-white"
+          className="bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"
+          onClick={()=> router.push("https://oauth2.cloudinator.istad.co/register")}
         >
-          <Link href={"/identity/register"}>SIGN UP</Link>
-        </Button> */}
+          {/* <Link href={"/identity/register"}>SIGN UP</Link> */}
+          <span>SIGN UP</span>
+        </Button>
         <Button
           asChild
           variant="outline"
