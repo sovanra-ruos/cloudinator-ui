@@ -686,7 +686,7 @@ export default function Service() {
                                             <div className="flex items-center gap-3">
                                                 {getServiceIcon(service.type)}
                                                 <h3 className="font-semibold text-lg text-purple-600 dark:text-purple-400">
-                                                    {service.name}
+                                                    {service.name.slice(0,4)}
                                                     {new Date().getTime() -
                                                         new Date(service.createdAt).getTime() <
                                                         24 * 60 * 60 * 1000 && (

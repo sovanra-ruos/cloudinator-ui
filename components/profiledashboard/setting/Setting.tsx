@@ -1,54 +1,67 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { format } from 'date-fns';
-import { useGetMeQuery, useUpdateUserByUsernameMutation } from '@/redux/api/userApi';
-import { toast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { Settings, Upload } from 'lucide-react';
-import Image from 'next/image';
-import Loading from '@/components/Loading';
-import SignOutModal from './SignOutModal';
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { format } from "date-fns";
+import {
+  useGetMeQuery,
+  useUpdateUserByUsernameMutation,
+} from "@/redux/api/userApi";
+import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Settings, Upload } from "lucide-react";
+import Image from "next/image";
+import Loading from "@/components/Loading";
+import SignOutModal from "./SignOutModal";
 
 export default function ProfilePage() {
   const params = useParams();
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSignOutModalOpen, setSignOutModalOpen] = useState(false);
 
-  const [email, setEmail] = useState('');
-  const [displayUsername, setDisplayUsername] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState("");
+  const [displayUsername, setDisplayUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined);
-  const [status, setStatus] = useState('');
-  const [gender, setGender] = useState('');
-  const [avatarSrc, setAvatarSrc] = useState('https://cloudinator.istad.co/placeholder.png');
+  const [status, setStatus] = useState("");
+  const [gender, setGender] = useState("");
+  const DEFAULT_AVATAR = "https://cloudinator.istad.co/placeholder.png";
+  const [avatarSrc, setAvatarSrc] = useState(
+    "https://cloudinator.istad.co/placeholder.png"
+  );
 
   const { data: userData, isLoading } = useGetMeQuery();
-  const [updateUser, { isLoading: isUpdating }] = useUpdateUserByUsernameMutation();
+  const [updateUser, { isLoading: isUpdating }] =
+    useUpdateUserByUsernameMutation();
 
   useEffect(() => {
     if (userData) {
       setEmail(userData.email);
       setDisplayUsername(userData.username);
-      setFirstName(userData.firstName || '');
-      setLastName(userData.lastName || '');
-      setPhoneNumber(userData.phoneNumber || '');
-      setDateOfBirth(userData.dateOfBirth ? new Date(userData.dateOfBirth) : undefined);
-      setStatus(userData.status || '');
-      setGender(userData.gender || '');
+      setFirstName(userData.firstName || "");
+      setLastName(userData.lastName || "");
+      setPhoneNumber(userData.phoneNumber || "");
+      setDateOfBirth(
+        userData.dateOfBirth ? new Date(userData.dateOfBirth) : undefined
+      );
+      setStatus(userData.status || "");
+      setGender(userData.gender || "");
       setAvatarSrc(
         userData.profileImage
-          ? userData.profileImage.startsWith('http')
+          ? userData.profileImage.startsWith("http")
             ? userData.profileImage
             : `https://cloudinator.istad.co${userData.profileImage}`
-          : 'https://cloudinator.istad.co/placeholder.png'
+          : "https://cloudinator.istad.co/placeholder.png"
       );
     }
   }, [userData]);
@@ -81,17 +94,18 @@ export default function ProfilePage() {
         },
       }).unwrap();
       toast({
-        title: 'Profile Updated',
-        description: 'Your profile information has been successfully updated.',
-        variant: 'default',
+        title: "Profile Updated",
+        description: "Your profile information has been successfully updated.",
+        variant: "default",
       });
       setIsEditMode(false);
     } catch (error) {
-      console.error('Failed to update user', error);
+      console.error("Failed to update user", error);
       toast({
-        title: 'Update Failed',
-        description: 'There was an error updating your profile. Please try again.',
-        variant: 'destructive',
+        title: "Update Failed",
+        description:
+          "There was an error updating your profile. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -105,10 +119,14 @@ export default function ProfilePage() {
   }
 
   const avatarSrcToUse = userData?.profileImage
-    ? userData.profileImage.startsWith('http')
+    ? userData.profileImage.startsWith("http")
       ? userData.profileImage // Use as-is if it's already a full URL
-      : `https://cloudinator.istad.co${userData.profileImage.startsWith('/') ? userData.profileImage : `/${userData.profileImage}`}` // Ensure a leading slash
-    : 'https://cloudinator.istad.co/placeholder.png'; // Fallback to a valid placeholder image
+      : `https://cloudinator.istad.co${
+          userData.profileImage.startsWith("/")
+            ? userData.profileImage
+            : `/${userData.profileImage}`
+        }` // Ensure a leading slash
+    : "https://cloudinator.istad.co/placeholder.png"; // Fallback to a valid placeholder image
 
   return (
     <div className="flex flex-col bg-background min-h-screen w-full p-6 md:p-10">
@@ -139,16 +157,23 @@ export default function ProfilePage() {
                   height={100}
                   alt="Profile"
                   className="h-full w-full object-cover"
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    img.onerror = null; // Prevent infinite loop
+                    img.src = DEFAULT_AVATAR;
+                  }}
                 />
               </div>
               <div>
                 <Button
                   type="button"
-                  onClick={() => document.getElementById('avatar-upload')?.click()}
+                  onClick={() =>
+                    document.getElementById("avatar-upload")?.click()
+                  }
                   variant="outline"
                   className="mb-2 text-purple-500 hover:text-purple-700"
                 >
-                  <Upload className="w-4 h-4 mr-2 text-purple-500 hover:text-purple-700" />{' '}
+                  <Upload className="w-4 h-4 mr-2 text-purple-500 hover:text-purple-700" />{" "}
                   Change avatar
                 </Button>
                 <p className="text-sm text-muted-foreground">
@@ -196,7 +221,10 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <Label htmlFor="firstname" className="text-base text-purple-500">
+                <Label
+                  htmlFor="firstname"
+                  className="text-base text-purple-500"
+                >
                   <span className="text-red-500">*</span> First Name
                 </Label>
                 <Input
@@ -226,7 +254,10 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <Label htmlFor="phoneNumber" className="text-base text-purple-500">
+                <Label
+                  htmlFor="phoneNumber"
+                  className="text-base text-purple-500"
+                >
                   <span className="text-red-500">*</span> Phone Number
                 </Label>
                 <Input
@@ -240,7 +271,10 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <Label htmlFor="dateOfBirth" className="text-base text-purple-500">
+                <Label
+                  htmlFor="dateOfBirth"
+                  className="text-base text-purple-500"
+                >
                   <span className="text-red-500">*</span> Date of Birth
                 </Label>
                 <Popover>
@@ -249,7 +283,11 @@ export default function ProfilePage() {
                       variant="outline"
                       className="w-full justify-start text-left font-normal mt-2"
                     >
-                      {dateOfBirth ? format(dateOfBirth, 'PPP') : <span>Pick a date</span>}
+                      {dateOfBirth ? (
+                        format(dateOfBirth, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -308,7 +346,7 @@ export default function ProfilePage() {
                 className="bg-purple-500 hover:bg-purple-700 focus:ring-2 focus:ring-purple-700 focus:ring-offset-2 dark:text-white"
                 disabled={isUpdating}
               >
-                {isUpdating ? 'Updating...' : 'Save Changes'}
+                {isUpdating ? "Updating..." : "Save Changes"}
               </Button>
             </div>
           </form>
@@ -322,6 +360,11 @@ export default function ProfilePage() {
                   height={100}
                   alt="Profile"
                   className="h-full w-full object-cover"
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    img.onerror = null; // Prevent infinite loop
+                    img.src = DEFAULT_AVATAR;
+                  }}
                 />
               </div>
             </div>
@@ -332,7 +375,9 @@ export default function ProfilePage() {
                 <p className="mt-2">{displayUsername}</p>
               </div>
               <div>
-                <Label className="text-base text-purple-500">Email Address</Label>
+                <Label className="text-base text-purple-500">
+                  Email Address
+                </Label>
                 <p className="mt-2">{email}</p>
               </div>
               <div>
@@ -344,12 +389,18 @@ export default function ProfilePage() {
                 <p className="mt-2">{lastName}</p>
               </div>
               <div>
-                <Label className="text-base text-purple-500">Phone Number</Label>
+                <Label className="text-base text-purple-500">
+                  Phone Number
+                </Label>
                 <p className="mt-2">{phoneNumber}</p>
               </div>
               <div>
-                <Label className="text-base text-purple-500">Date of Birth</Label>
-                <p className="mt-2">{dateOfBirth ? format(dateOfBirth, 'PPP') : 'Not set'}</p>
+                <Label className="text-base text-purple-500">
+                  Date of Birth
+                </Label>
+                <p className="mt-2">
+                  {dateOfBirth ? format(dateOfBirth, "PPP") : "Not set"}
+                </p>
               </div>
               <div>
                 <Label className="text-base text-purple-500">Status</Label>

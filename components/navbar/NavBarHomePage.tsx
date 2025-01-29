@@ -66,12 +66,12 @@ const NavBarHomePage = () => {
 
     return (
       <>
-        <Button
+        {/* <Button
           asChild
           className="bg-purple-600 hover:bg-purple-700 text-white"
         >
           <Link href={"/identity/register"}>SIGN UP</Link>
-        </Button>
+        </Button> */}
         <Button
           asChild
           variant="outline"
