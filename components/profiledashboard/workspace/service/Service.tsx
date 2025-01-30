@@ -37,7 +37,8 @@ import {
     Globe,
     ExternalLink,
     Folder,
-    Loader2
+    Zap,
+    PowerOff,
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -50,8 +51,10 @@ import {
 } from "@/redux/api/projectApi";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import Loading from "@/components/Loading";
+// import Loading from "@/components/Loading";
 import { Badge } from "@/components/ui/badge";
+import Lottie from "lottie-react";
+import LoadingMissile from "@/public/LoadingMissile.json";
 
 const CreateProjectContent = lazy(
     () => import("@/components/profiledashboard/workspace/CreateProjectContent")
@@ -71,6 +74,7 @@ type ServiceType = {
     username: string;
     dbType: string;
     dbVersion: string;
+    buildStatus?: string;
 };
 
 export type ServiceDeploymentResponse = {
@@ -118,7 +122,7 @@ type DatabaseType = {
     subdomain: string;
 };
 
-type DatabaseDeploymentResponse = {
+export type DatabaseDeploymentResponse = {
     next: boolean;
     previous: boolean;
     total: number;
@@ -164,6 +168,7 @@ export default function Service() {
 
     const { data: workspacesData } = useGetWorkspacesQuery();
     const workspaces = workspacesData || [];
+
 
     const [selectedWorkspace, setSelectedWorkspace] = useState(() => {
         if (typeof window !== "undefined") {
@@ -357,15 +362,15 @@ export default function Service() {
 
                 console.log("Failed to delete service deployment:", error);
 
-                    if (error?.status === "PARSING_ERROR" && error?.originalStatus === 200) {
-                        toast({
-                            title: "Success",
-                            description:
-                                error?.data?.message ||
-                                `Service "${serviceToDelete.name}" has been deleted successfully.`,
-                            variant: "success",
-                            duration: 3000,
-                        });
+                if (error?.status === "PARSING_ERROR" && error?.originalStatus === 200) {
+                    toast({
+                        title: "Success",
+                        description:
+                            error?.data?.message ||
+                            `Service "${serviceToDelete.name}" has been deleted successfully.`,
+                        variant: "success",
+                        duration: 3000,
+                    });
 
                     data1();
                     data2();
@@ -433,7 +438,7 @@ export default function Service() {
                 toast({
                     title: "Success",
                     description: `Database "${databaseToDelete.dbName}" has been deleted successfully.`,
-                    variant: "default",
+                    variant: "success",
                     duration: 3000,
                 });
 
@@ -447,7 +452,7 @@ export default function Service() {
                     description:
                         error?.data?.message ||
                         "Failed to delete database. Please try again.",
-                    variant: "destructive",
+                    variant: "error",
                     duration: 5000,
                 });
             } finally {
@@ -459,9 +464,9 @@ export default function Service() {
     };
 
     const EmptyState = ({
-        type,
-        onCreateProject,
-    }: {
+                            type,
+                            onCreateProject,
+                        }: {
         type: string;
         onCreateProject: () => void;
     }) => {
@@ -505,8 +510,13 @@ export default function Service() {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-                    <Loading />
+                    {/* Replace Loader2 with Lottie animation */}
+                    <Lottie
+                        animationData={LoadingMissile} // Pass the JSON animation
+                        loop={true} // Make the animation loop
+                        style={{ width: 64, height: 64 }} // Set the size of the animation
+                    />
+                    {/* <Loading /> */}
                 </div>
             </div>
         );
@@ -618,8 +628,7 @@ export default function Service() {
                         <Button
                             key={type}
                             variant={selectedType === type ? "default" : "outline"}
-                            className={`bg-white dark:bg-gray-700 text-purple-500 dark:text-purple-400 capitalize hover:text-purple-700 dark:hover:text-purple-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:ring-purple-500 border border-gray-300 dark:border-gray-600 transition-all ease-in-out ${
-                                selectedType === type ? "ring-2 ring-purple-500 glow" : ""
+                            className={`bg-white dark:bg-gray-700 text-purple-500 dark:text-purple-400 capitalize hover:text-purple-700 dark:hover:text-purple-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:ring-purple-500 border border-gray-300 dark:border-gray-600 transition-all ease-in-out ${selectedType === type ? "ring-2 ring-purple-500 glow" : ""
                             }`}
                             onClick={() => setSelectedType(type)}
                         >
@@ -669,24 +678,26 @@ export default function Service() {
                                     href={
                                         service.type === "subworkspace"
                                             ? `/workspace/sub-workspace/${service.name}`
-                                            : `/workspace/${service.name}`
+                                            : service.type === "database"
+                                                ? `/workspace/database/${service.name}` // New route for database services
+                                                : `/workspace/${service.name}`
                                     }
                                     passHref
                                     legacyBehavior
                                 >
                                     <div
                                         className={`p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 h-full flex flex-col justify-between relative group cursor-pointer hover:border-purple-500 hover:bg-gray-100 ${new Date().getTime() -
-                                            new Date(service.createdAt).getTime() <
-                                            24 * 60 * 60 * 1000
+                                        new Date(service.createdAt).getTime() <
+                                        24 * 60 * 60 * 1000
                                             ? styles.newProject
                                             : ""
-                                            }`}
+                                        }`}
                                     >
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="flex items-center gap-3">
                                                 {getServiceIcon(service.type)}
                                                 <h3 className="font-semibold text-lg text-purple-600 dark:text-purple-400">
-                                                    {service.name.slice(0,4)}...
+                                                    {service.name}
                                                     {new Date().getTime() -
                                                         new Date(service.createdAt).getTime() <
                                                         24 * 60 * 60 * 1000 && (
@@ -700,12 +711,16 @@ export default function Service() {
                                             <div className="flex items-center gap-2">
                                                 <Badge
                                                     variant="outline"
-                                                    className={`text-sm font-medium px-3 py-1 rounded-full ${service.status
+                                                    className={`text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1 ${service.status
                                                         ? "bg-green-100 text-green-700 border-green-200 animate-pulse"
                                                         : "bg-red-100 text-red-700 border-red-200"
-                                                        }`}
+                                                    }`}
                                                 >
-                                                    {service.status ? "Running" : "Stopping"}
+                                                    {service.status ? (
+                                                        <Zap className="w-4 h-4 text-green-700" />
+                                                    ) : (
+                                                        <PowerOff className="w-4 h-4 text-red-700" />
+                                                    )}
                                                 </Badge>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
@@ -763,32 +778,38 @@ export default function Service() {
                                                     <GitBranch className="w-4 h-4 mr-2 flex-shrink-0 text-purple-500" />
                                                     <span className="truncate">{service.gitUrl}</span>
                                                 </a>
-                                            ) : service.type !== "subworkspace" ? (
+                                            ) : service.type !== "subworkspace" && service.type !== "database" ? (
                                                 <span className="text-gray-500 dark:text-gray-400">
                                                     Git URL not available
                                                 </span>
                                             ) : null}
 
+                                            {/* Subworkspace Card  */}
                                             {service?.type === "subworkspace" ? (
                                                 <span className="text-gray-500 dark:text-gray-400">
-                                                    This is a sub-workspace where you can manage your microservices.
+                                                    sub-workspace where you can manage your <span className="text-green-500 font-semibold">microservices</span>.
                                                 </span>
                                             ) : service.type === "database" ? (
                                                 <div className="space-y-2">
+                                                    {/* Database Type */}
                                                     <div className="flex items-center space-x-2">
                                                         <Database className="w-4 h-4 text-purple-500" />
-                                                        <span className="truncate">Database Type : {service.dbType} </span>
+                                                        <span className="truncate">Database Type: {service.dbType}</span>
                                                     </div>
+
+                                                    {/* Username and Password */}
                                                     <div className="flex items-center space-x-2">
                                                         <User2 className="w-4 h-4 text-purple-500" />
                                                         <span className="truncate">User: {service.name}</span>
-                                                        <span className="truncate">Password: {service.password}</span>
+
                                                     </div>
-                                                    <div className="flex items-center space-x-2">
+
+                                                    {/* Port and Domain */}
+                                                    {/* <div className="flex items-center space-x-2">
                                                         <Server className="w-4 h-4 text-purple-500" />
                                                         <span className="truncate">Port: {service.port}</span>
-                                                        <span className="truncate">Domain: {service.subdomain}</span>
-                                                    </div>
+                                                        <span className="truncate">Host: {service.subdomain}</span>
+                                                    </div> */}
                                                 </div>
                                             ) : service.subdomain ? (
                                                 <a
@@ -817,7 +838,7 @@ export default function Service() {
                                                     variant="outline"
                                                     size="sm"
                                                     className={`text-purple-600 border-purple-100 hover:bg-purple-50 dark:hover:bg-purple-900 w-full sm:w-auto ${!service.status ? "opacity-50 cursor-not-allowed" : ""
-                                                        }`}
+                                                    }`}
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         if (service.status) {
@@ -847,8 +868,9 @@ export default function Service() {
                                                         {service?.type === "subworkspace"
                                                             ? "Sub Workspace"
                                                             : service.type === "database"
-                                                                ? `${service.type} Database`
-                                                                : service.branch}
+                                                                ? `${service.type}`
+                                                                : service.branch
+                                                        }
                                                     </span>
                                                 </span>
                                             </div>
@@ -877,6 +899,14 @@ export default function Service() {
                     <Input
                         value={deleteConfirmationName}
                         onChange={(e) => setDeleteConfirmationName(e.target.value)}
+                        onPaste={(e) => {
+                            e.preventDefault(); // Prevent paste action
+                            toast({
+                                title: "Secure your deletion",
+                                description: "Please type the name manually to confirm deletion.",
+                                variant: "error",
+                            });
+                        }}
                         placeholder={`Type ${serviceToDelete ? "service" : subWorkspaceToDelete ? "subworkspace" : "database"} name here`}
                     />
                     <div className="flex justify-end space-x-2 mt-4">
